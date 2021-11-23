@@ -2,19 +2,38 @@ const { Category } = require('../models/categoryModel');
 const express = require('express');
 const router = express.Router();
 
-router.get(`/`, async (req, res) => {
+// get all categories
+router.get('/', async (req, res) => {
     const categoryList = await Category.find();
-
     if (!categoryList) {
-        res.status(500).json({
-            success: false
-        })
+        return res.
+        status(500)
+            .send({
+                message: "Could not find!",
+                success: false
+            })
     }
     res.send(categoryList);
 })
 
+// get category by id
+router.get('/:id', async (req, res) => {
+    const categoryList = await Category.findById(req.params.id);
+    if (!categoryList) {
+        return res.
+        status(500)
+            .send({
+                message: "Category with the given ID does not exist.",
+                success: false
+            })
+    } else {
+        return res
+            .send(categoryList);
+    }
+})
+
 // add category
-router.post(`/`, async (req, res) => {
+router.post('/', async (req, res) => {
     let category = Category({
         name: req.body.name,
         icon: req.body.icon,
@@ -25,7 +44,7 @@ router.post(`/`, async (req, res) => {
         return res
             .status(404)
             .send({
-                message: "The category cannot be created",
+                message: "The category cannot be created.",
                 success: false
             })
     } else {
@@ -43,24 +62,61 @@ router.delete('/:id', async (req, res) => {
             return res.
             status(200).
             send({
-                message: "Succesfully deleted categoty",
+                message: "Succesfully deleted categoty.",
                 success: true
             })
         } else {
             return res.
             status(404).
             send({
-                message: "Category not found",
+                message: "Category not found!",
                 success: false
             })
         }
-    }
-    catch(err){
+    } catch (err) {
         return res.
         status(400).
         send({
-            error : err,
-            success : false
+            error: err,
+            success: false
+        })
+    }
+})
+
+// update category
+router.put('/:id', async (req, res) => {
+    try {
+        const category = await Category.findByIdAndUpdate(
+            req.params.id, {
+                name: req.body.name,
+                icon: req.body.icon,
+                color: req.body.color
+            }, {
+                new: true
+            }
+        )
+        if (!category) {
+            return res.
+            status(400).
+            send({
+                message: "Category not found!",
+                success: false
+            })
+        } else {
+            return res.
+            status(200).
+            send({
+                message: "Category updated.",
+                data: category,
+                success: true
+            })
+        }
+    } catch (err) {
+        return res.
+        status(400).
+        send({
+            error: err,
+            success: false
         })
     }
 })
