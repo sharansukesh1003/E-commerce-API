@@ -54,8 +54,14 @@ const productSchema = mongoose.Schema({
     },
 })
 
-productSchema.virtual('id').get(function () {
-    return this._id.toHexString() // will convert _id to id (front end friendly)
+productSchema.virtual('id').get( async function () {
+    try{
+        let id = await this._id // will convert _id to id (front end friendly)
+        return id.toHexString()
+    }
+    catch(err){
+        console.log(err)
+    }
 })
 
 productSchema.set('toJSON', {

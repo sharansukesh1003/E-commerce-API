@@ -7,8 +7,10 @@ const router = express.Router();
 // get all products with or without categories
 router.get(`/`, async (req, res) => {
     let filter = {}
-    if(req.query.categories) {
-        filter = { category : req.query.categories.split(',') }
+    if (req.query.categories) {
+        filter = {
+            category: req.query.categories.split(',')
+        }
     }
     const productList = await Product.find(filter);
     if (!productList) {
@@ -21,15 +23,20 @@ router.get(`/`, async (req, res) => {
 
 // get product by id
 router.get(`/:id`, async (req, res) => {
-    const productList = await Product.findById(req.params.id)
-        .select('name image -_id') // query for particular properties, for excluding add -
-        .populate('category')
-    if (!productList) {
-        res.status(500).json({
-            success: false
-        })
+    try {
+        const productList = await Product.findById(req.params.id)
+            .select('name image -_id') // query for particular properties, for excluding add -
+            .populate('category')
+        if (!productList) {
+            res.status(500).json({
+                success: false
+            })
+        }
+        res.send(productList);
+    } catch (err) {
+        console.log(err)
+        return res.send(err)
     }
-    res.send(productList);
 })
 
 // add new product
@@ -74,11 +81,11 @@ router.post(`/`, async (req, res) => {
 
 // update product
 router.put('/:id', async (req, res) => {
-    if(!mongoose.isValidObjectId(req.params.id)) {
+    if (!mongoose.isValidObjectId(req.params.id)) {
         return res.
         status(200).
         send({
-            message : "Invalid Object ID"
+            message: "Invalid Object ID"
         })
     }
     const category = await Category.findById(req.body.category)
@@ -91,8 +98,7 @@ router.put('/:id', async (req, res) => {
     }
     try {
         let product = await Product.findByIdAndUpdate(
-            req.params.id, 
-            {
+            req.params.id, {
                 name: req.body.name,
                 description: req.body.description,
                 richDescription: req.body.richDescription,
@@ -104,8 +110,7 @@ router.put('/:id', async (req, res) => {
                 isFeatured: req.body.isFeatured,
                 dateCreated: req.body.dateCreated,
                 countInStock: req.body.countInStock
-            }, 
-            {
+            }, {
                 new: true
             }
         )
@@ -173,22 +178,24 @@ router.get(`/get/count`, async (req, res) => {
         })
     }
     res.send({
-        productCount : productCount 
+        productCount: productCount
     });
 })
 
 // get featured products
 router.get(`/get/featured/:count`, async (req, res) => {
     const count = req.params.count ? req.params.count : 0
-    const featuredProduct = await Product.find({isFeatured : true})
-    .limit(+count) // will limit the returned object to the count (added + to typecast to int)
+    const featuredProduct = await Product.find({
+            isFeatured: true
+        })
+        .limit(+count) // will limit the returned object to the count (added + to typecast to int)
     if (!featuredProduct) {
         res.status(500).json({
             success: false
         })
     }
     res.send({
-        featuredProduct : featuredProduct 
+        featuredProduct: featuredProduct
     });
 })
 
